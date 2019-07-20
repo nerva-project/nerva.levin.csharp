@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Nerva.Levin.targets"/>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Nerva.Levin</AssemblyName>
+  </PropertyGroup>
+</Project>

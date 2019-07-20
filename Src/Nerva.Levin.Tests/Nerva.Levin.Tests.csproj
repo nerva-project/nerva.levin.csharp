@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Nerva.Levin.targets"/>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Nerva.Levin.Tests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Nerva.Levin/Nerva.Levin.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="*"/>
+  </ItemGroup>
+</Project>

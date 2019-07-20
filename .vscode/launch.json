@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceRoot}/Bin/Debug/Nerva.Levin.Tests.dll",
+            "cwd": "${workspaceRoot}/Bin",
+            "console": "integratedTerminal",
+            "preLaunchTask": "build-debug",
+            "args":["--version", "0.1.6.8"]
+        },
+    ]
+}
