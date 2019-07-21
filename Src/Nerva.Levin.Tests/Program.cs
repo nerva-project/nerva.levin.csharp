@@ -18,7 +18,7 @@ namespace Nerva.Levin
             Log.CreateInstance(true);
 
             string host = "127.0.0.1";
-            
+
             if (cmd["host"] != null)
                 host = cmd["host"].Value;
 
@@ -46,72 +46,80 @@ namespace Nerva.Levin
                 Log.Instance.Write("Waiting for reply");
                 Log.Instance.SetColor(ConsoleColor.Green);
 
-                byte[] buffer = new byte[1024*1024];
-
-                Dictionary<Header, Section> results = new Dictionary<Header, Section>();
-
-                while (true)
-                {
-                    if (!ns.DataAvailable)
-                    {
-                        Thread.Sleep(10);
-                        continue;
-                    }
-
-                    int i = ns.Read(buffer, 0, 1024*1024);
-
-                    Log.Instance.Write($"Received {i} bytes");
-
-                    if (BitShifter.ToULong(buffer) != Constants.LEVIN_SIGNATURE)
-                    {
-                        Log.Instance.Write(Log_Severity.Error, "Invalid response from remote node");
-                        break;
-                    }
-
-                    bool exit = false;
-                    int offset = 0;
-
-                    while (!exit)
-                    {
-                        Header h = Header.FromBytes(buffer, ref offset);
-                        Section s = null;
-
-                        switch (h.Command)
-                        {
-                            case Constants.P2P_COMMAND_HANDSHAKE:
-                                s = new Handshake().Read(h, buffer, ref offset);
-                                break;
-                            case Constants.P2P_COMMAND_REQUEST_SUPPORT_FLAGS:
-                                s = new SupportFlags().Read(h, buffer, ref offset);
-                                break;
-                            default:
-                                throw new NotSupportedException($"Command {h.Command} is not yet supported");
-                        }
-
-                        results.Add(h, s);
-
-                        if (offset >= i)
-                        {
-                            exit = true;
-                            break;
-                        }
-                    }
-                    
-                    if (exit)
-                        break;
-                }
-
+                Dictionary<Header, Section> data = new Dictionary<Header, Section>();
+                Header header;
+                Section section;
+                while (Read(tcp, out header, out section))
+                    data.Add(header, section);
+                
                 Log.Instance.SetColor(ConsoleColor.DarkCyan);
                 Log.Instance.Write("Closing connection");
                 tcp.GetStream().Close();
                 tcp.Close();
-
-                foreach (var r in results)
-                {
-                    if (r.Key.Command == 1001)
-                        Console.WriteLine(JsonConvert.SerializeObject(r.Value.Entries["local_peerlist_new"]));
-                }
             }
+        }
+
+        private static bool Read(TcpClient tcp, out Header header, out Section section)
+        {
+            header = null;
+            section = null;
+
+            NetworkStream ns = tcp.GetStream();
+
+            byte[] headerBuffer = new byte[33];
+
+            int offset = 0;
+            int i = ns.Read(headerBuffer, 0, headerBuffer.Length);
+            header = Header.FromBytes(headerBuffer, ref offset);
+
+            if (BitShifter.ToULong(headerBuffer) != Constants.LEVIN_SIGNATURE)
+            {
+                Log.Instance.Write(Log_Severity.Error, "Invalid response from remote node");
+                return false;
+            }
+
+            if (i < headerBuffer.Length)
+            {
+                Log.Instance.Write(Log_Severity.Error, "Invalid response from remote node");
+                return false;
+            }
+            
+            offset = 0;
+            byte[] buffer = new byte[header.Cb];
+            i = ns.Read(buffer, 0, buffer.Length);
+
+            if (i < buffer.Length)
+            {
+                Log.Instance.Write(Log_Severity.Error, "Invalid response from remote node");
+                return false;
+            }
+
+            section = null;
+
+            switch (header.Command)
+            {
+                case Constants.P2P_COMMAND_HANDSHAKE:
+                    section = new Handshake().Read(header, buffer, ref offset);
+                    break;
+                case Constants.P2P_COMMAND_REQUEST_SUPPORT_FLAGS:
+                    section = new SupportFlags().Read(header, buffer, ref offset);
+                    break;
+                default:
+                    Log.Instance.Write(Log_Severity.Error, $"Command {header.Command} is not yet supported");
+                    return false;
+            }
+
+            Log.Instance.SetColor(ConsoleColor.Green);
+            Log.Instance.Write($"Read data package {header.Command}");
+
+            if (!ns.DataAvailable)
+            {
+                Log.Instance.SetColor(ConsoleColor.DarkMagenta);
+                Log.Instance.Write("Network stream ended");
+                return false;
+            }
+
+            return true;
         }
     }
 }
