@@ -37,14 +37,10 @@ namespace Nerva.Levin
 
                 byte[] handshake = new Handshake().Create(17565);
 
-                Log.Instance.SetColor(ConsoleColor.DarkCyan);
-
                 Log.Instance.Write("Sending handshake");
                 ns.Write(handshake, 0, handshake.Length);
 
-                Log.Instance.SetColor(ConsoleColor.Yellow);
                 Log.Instance.Write("Waiting for reply");
-                Log.Instance.SetColor(ConsoleColor.Green);
 
                 Dictionary<Header, Section> data = new Dictionary<Header, Section>();
                 Header header;
@@ -52,7 +48,6 @@ namespace Nerva.Levin
                 while (Read(tcp, out header, out section))
                     data.Add(header, section);
                 
-                Log.Instance.SetColor(ConsoleColor.DarkCyan);
                 Log.Instance.Write("Closing connection");
                 tcp.GetStream().Close();
                 tcp.Close();
@@ -109,12 +104,10 @@ namespace Nerva.Levin
                     return false;
             }
 
-            Log.Instance.SetColor(ConsoleColor.Green);
             Log.Instance.Write($"Read data package {header.Command}");
 
             if (!ns.DataAvailable)
             {
-                Log.Instance.SetColor(ConsoleColor.DarkMagenta);
                 Log.Instance.Write("Network stream ended");
                 return false;
             }
