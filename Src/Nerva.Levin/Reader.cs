@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using AngryWasp.Helpers;
+using AngryWasp.Logger;
 
 namespace Nerva.Levin
 {
@@ -10,21 +11,27 @@ namespace Nerva.Levin
         private Section section = new Section();
         public Section Output => section;
 
-        public void ReadPayload(Header h, byte[] bytes, ref int offset)
+        public bool ReadPayload(Header h, byte[] bytes, ref int offset)
         {
-            int end = offset + (int)h.Cb;
-
             uint sigA = BitShifter.ToUInt(bytes, ref offset);
             uint sigB = BitShifter.ToUInt(bytes, ref offset);
 
             if (sigA != Constants.PORTABLE_STORAGE_SIGNATUREA ||
                 sigB != Constants.PORTABLE_STORAGE_SIGNATUREB)
-                throw new Exception("Portable storage signature mismatch");
+            {
+                Log.Instance.Write(Log_Severity.Error, "Portable storage signature mismatch");
+                return false;
+            }
 
             if (bytes[offset++] != Constants.PORTABLE_STORAGE_FORMAT_VER)
-                throw new Exception("Portable storage format version mismatch");
+            {
+                Log.Instance.Write(Log_Severity.Error, "Portable storage format version mismatch");
+                return false;
+            }
 
+            //todo: Need to fail here if required
             section = ReadSection(bytes, ref offset);
+            return true;
         }
 
         private Section ReadSection(byte[] bytes, ref int offset)
@@ -63,7 +70,16 @@ namespace Nerva.Levin
                 return LoadStorageArrayEntry(type, bytes, ref offset);
 
             if (type == Constants.SERIALIZE_TYPE_ARRAY)
-                return ReadStorageEntryArrayEntry(bytes, ref offset);
+            {
+                type = bytes[offset++];
+                if ((type & Constants.SERIALIZE_FLAG_ARRAY) != 0)
+                {
+                    Log.Instance.Write(Log_Severity.Error, "Wrong type sequences");
+                    return null;
+                }
+
+                return LoadStorageArrayEntry(type, bytes, ref offset);
+            }
 
             return Read(type, bytes, ref offset);
         }
@@ -92,34 +108,20 @@ namespace Nerva.Levin
                     return ReadByteArray(bytes, ref offset);
                 case Constants.SERIALIZE_TYPE_OBJECT:
                     return ReadSection(bytes, ref offset);
-                default:
-                    throw new NotImplementedException($"Serializer type {type} is not implemented by LevinReader");
             }
-        }
 
-        private object ReadStorageEntryArrayEntry(byte[] bytes, ref int offset)
-        {
-            byte type = bytes[offset++];
-
-            if ((type & Constants.SERIALIZE_FLAG_ARRAY) != 0)
-                throw new Exception("Wrong type sequences");
-
-            return LoadStorageArrayEntry(type, bytes, ref offset);
+            return null;
         }
 
         private object LoadStorageArrayEntry(int type, byte[] bytes, ref int offset)
         {
             type &= ~Constants.SERIALIZE_FLAG_ARRAY;
-            return ReadArrayEntry((byte)type, bytes, ref offset);
-        }
 
-        private object ReadArrayEntry(byte type, byte[] bytes, ref int offset)
-        {
             long count = VarInt.From(bytes, ref offset);
             object[] data = new object[count];
 
             for (int i = 0; i < count; i++)
-                data[i] = Read(type, bytes, ref offset);
+                data[i] = Read((byte)type, bytes, ref offset);
             
             return data;
         }

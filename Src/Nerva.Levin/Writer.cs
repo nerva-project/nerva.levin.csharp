@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using AngryWasp.Helpers;
+using AngryWasp.Logger;
 
 namespace Nerva.Levin
 {
@@ -11,15 +11,15 @@ namespace Nerva.Levin
         private List<byte> buffer = new List<byte>();
         public List<byte> Output => buffer;
         
-        public void WritePayload(Section section)
+        public bool WritePayload(Section section)
         {
             buffer.AddRange(BitShifter.ToByte(Constants.PORTABLE_STORAGE_SIGNATUREA));
             buffer.AddRange(BitShifter.ToByte(Constants.PORTABLE_STORAGE_SIGNATUREB));
             buffer.Add(Constants.PORTABLE_STORAGE_FORMAT_VER);
-            WriteSection(section);
+            return WriteSection(section);
         }
 
-        private void WriteSection(Section section)
+        private bool WriteSection(Section section)
         {
             buffer.AddRange(VarInt.To((long)section.Entries.Count));
             foreach (var e in section.Entries)
@@ -27,23 +27,28 @@ namespace Nerva.Levin
                 byte[] key = Encoding.ASCII.GetBytes(e.Key);
                 buffer.Add((byte)key.Length);
                 buffer.AddRange(key);
-                SerializedWrite(e.Value);
+                if (!SerializedWrite(e.Value))
+                    return false;
             }
+
+            return true;
         }
 
-        private void SerializedWrite(object value)
+        private bool SerializedWrite(object value)
         {
             if (value is Section)
             {
                 buffer.Add(Constants.SERIALIZE_TYPE_OBJECT);
-                WriteSection((Section)value);
-                return;
+                return WriteSection((Section)value);
             }
 
             Type t = value.GetType();
 
             if (!Constants.BoostTypes.ContainsKey(t))
-                throw new Exception("Unable to cast input to serialized data");
+            {
+                Log.Instance.Write(Log_Severity.Error, "Unable to cast input to serialized data");
+                return false;
+            }
 
             byte boostType = Constants.BoostTypes[t];
             buffer.Add(boostType);
@@ -82,6 +87,8 @@ namespace Nerva.Levin
                         break;
                 }
             }
+
+            return true;
         }
     }
 }

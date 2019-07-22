@@ -48,8 +48,6 @@ namespace Nerva.Levin
                 v = RightShift(ReadRemaining(i, b, 3, ref offset), 2);
             else if (size_mask == Constants.PORTABLE_RAW_SIZE_MARK_INT64)
                 v = RightShift(ReadRemaining(i, b, 7, ref offset), 2);
-            else
-                throw new Exception("Invalid VarInt");
 
             return v;
         }

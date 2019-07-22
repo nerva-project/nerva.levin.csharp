@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AngryWasp.Helpers;
+using AngryWasp.Logger;
 
 namespace Nerva.Levin
 {
@@ -29,15 +30,15 @@ namespace Nerva.Levin
 
         public static Header FromBytes(byte[] buffer, ref int offset)
         {
-            if (buffer.Length < 33)
-                throw new Exception("Buffer is insufficient length");
-
             Header h = new Header();
             
             ulong levin_sig = BitShifter.ToULong(buffer, ref offset);
 
             if (levin_sig != Constants.LEVIN_SIGNATURE)
-                throw new Exception("Levin signature is incorrect");
+            {
+                Log.Instance.Write(Log_Severity.Error, "Levin signature is incorrect");
+                return null;
+            }
 
             h.Cb = BitShifter.ToULong(buffer, ref offset);
             h.HaveToReturnData = buffer[offset++] == 1 ? true : false;
@@ -48,7 +49,10 @@ namespace Nerva.Levin
             uint levin_protocol = BitShifter.ToUInt(buffer, ref offset);
 
             if (levin_protocol != Constants.LEVIN_PROTOCOL_VER_1)
-                throw new Exception("Levin protocol is incorrect");
+            {
+                Log.Instance.Write(Log_Severity.Error, "Levin protocol is incorrect");
+                return null;
+            }
 
             return h;
         }
