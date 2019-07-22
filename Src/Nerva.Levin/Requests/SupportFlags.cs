@@ -4,7 +4,7 @@ namespace Nerva.Levin.Requests
 {
     public class SupportFlags
     {
-        public byte[] Create(uint port)
+        public byte[] Create(uint port = 17565)
         {
             throw new NotImplementedException();
         }

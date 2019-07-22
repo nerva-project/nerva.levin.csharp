@@ -6,7 +6,7 @@ namespace Nerva.Levin.Requests
 {
     public class Handshake
     {
-        public byte[] Create(uint port)
+        public byte[] Create(uint port = 17565)
         {
             Section section = new Section();
 
