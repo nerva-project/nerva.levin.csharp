@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <AssemblyName>Nerva.Levin.Tests</AssemblyName>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Nerva.Levin/Nerva.Levin.csproj"/>
