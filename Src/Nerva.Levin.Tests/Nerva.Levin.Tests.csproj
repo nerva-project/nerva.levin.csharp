@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../Nerva.Levin.targets"/>
+  <Import Project="../../External/AngryWasp.Build/AngryWasp.Build.Application.targets"/>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <AssemblyName>Nerva.Levin.Tests</AssemblyName>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../External/AngryWasp.Build/LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Nerva.Levin/Nerva.Levin.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="*"/>
+    <PackageReference Include="AngryWasp.Cli" Version="*"/>
   </ItemGroup>
 </Project>

@@ -1,7 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../Nerva.Levin.targets"/>
+  <Import Project="../../External/AngryWasp.Build/AngryWasp.Build.Library.targets"/>
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <AssemblyName>Nerva.Levin</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Nerva.Levin.CSharp</PackageId>
+    <Title>$(PackageId)</Title>
+    <Version>1.0.0</Version>
+    <Authors>AngryWasp</Authors>
+    <PackageDescription>.NET implementation of the Nerva levin protocol</PackageDescription>
+    <PackageLicenseFile>AngryWasp.LICENSE.txt</PackageLicenseFile>
+    <RepositoryUrl>https://bitbucket.org/nerva-xnv/nerva.levin.csharp</RepositoryUrl>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../External/AngryWasp.Build/LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AngryWasp.Helpers" Version="*"/>
+    <PackageReference Include="AngryWasp.Logger" Version="*"/>
+  </ItemGroup>
 </Project>

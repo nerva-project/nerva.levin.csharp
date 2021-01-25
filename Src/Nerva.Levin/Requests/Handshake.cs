@@ -11,7 +11,7 @@ namespace Nerva.Levin.Requests
             Section section = new Section();
 
             Section nodeData = new Section();
-            nodeData.Add("local_time", DateTimeHelper.TimestampNow());
+            nodeData.Add("local_time", DateTimeHelper.TimestampNow);
             nodeData.Add("my_port", port);
             nodeData.Add("network_id", new HexString(Constants.NETWORK_ID));
             nodeData.Add("peer_id", BitShifter.ToULong(new MersenneTwister(MathHelper.Random.GenerateRandomSeed()).NextBytes(8)));

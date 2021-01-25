@@ -2,29 +2,25 @@
 using System.Net.Sockets;
 using AngryWasp.Logger;
 using Nerva.Levin.Requests;
-using System.Threading;
 using AngryWasp.Helpers;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using AngryWasp.Cli.Args;
 
 namespace Nerva.Levin
 {
     public static class MainClass
     {
         [STAThread]
-        public static void Main(string[] args)
+        public static void Main(string[] rawArgs)
         {
-            CommandLineParser cmd = CommandLineParser.Parse(args);
+            Arguments args = Arguments.Parse(rawArgs);
             Log.CreateInstance(true);
 
-            string host = "127.0.0.1";
+            string host = args.GetString("host", "127.0.0.1");
 
-            if (cmd["host"] != null)
-                host = cmd["host"].Value;
+            Globals.Version = args.GetString("version");
 
-            if (cmd["version"] != null)
-                Globals.Version = cmd["version"].Value;
-            else
+            if (Globals.Version == null)
             {
                 Log.Instance.Write(Log_Severity.Error, "Argument 'version' missing");
                 return;
